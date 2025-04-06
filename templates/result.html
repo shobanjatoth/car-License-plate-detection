@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Processed File</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)),
+                  url('https://images.unsplash.com/photo-1532298488760-970ff6decf61?auto=format&fit=crop&w=1600&q=80') no-repeat center center;
+      background-size: cover;
+      color: #f0f0f0;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 60px auto;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.6);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #00ffff;
+    }
+
+    .file-display {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .file-section {
+      flex: 1 1 45%;
+    }
+
+    .file-section h3 {
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    video, img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      border: 2px solid #00bfff;
+      border-radius: 8px;
+    }
+
+    .ocr-result {
+      margin-top: 30px;
+    }
+
+    .ocr-result h2 {
+      color: #00ffcc;
+      margin-bottom: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table th, table td {
+      padding: 12px;
+      border: 1px solid #444;
+      text-align: left;
+      color: #f0f0f0;
+    }
+
+    table th {
+      background-color: #222;
+    }
+
+    .upload-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .upload-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .center {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .file-display {
+        flex-direction: column;
+      }
+
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Processed File</h1>
+
+    <div class="file-display">
+      <div class="file-section">
+        <h3>Uploaded File:</h3>
+        {% if uploaded_file.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')) %}
+          <video controls>
+            <source src="{{ url_for('static', filename='uploads/' + uploaded_file) }}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        {% else %}
+          <img src="{{ url_for('static', filename='uploads/' + uploaded_file) }}" alt="Uploaded Image">
+        {% endif %}
+      </div>
+
+      <div class="file-section">
+        <h3>Processed File:</h3>
+        {% if processed_file.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')) %}
+          <video controls>
+            <source src="{{ url_for('static', filename='processed/' + processed_file) }}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        {% else %}
+          <img src="{{ url_for('static', filename='processed/' + processed_file) }}" alt="Processed Image">
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="ocr-result">
+      <h2>Detected License Plate:</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Text</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for text in ocr_results %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ text }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="center">
+      <a href="/" class="upload-btn">Upload Another File</a>
+    </div>
+  </div>
+</body>
+</html>
