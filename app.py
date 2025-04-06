@@ -3,7 +3,8 @@ import cv2
 import torch
 import uuid
 import subprocess
-from flask import Flask, render_template, request, redirect, url_for
+import shutil
+from flask import Flask, render_template, request, redirect
 from paddleocr import PaddleOCR
 from ultralytics import YOLO
 import numpy as np
@@ -20,10 +21,10 @@ os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["PROCESSED_FOLDER"] = PROCESSED_FOLDER
 
-# Path to FFmpeg
-FFMPEG_PATH = r"D:\\object_detection\\ffmpeg-2025-03-31-git-35c091f4b7-full_build\\bin\\ffmpeg.exe"
-if not os.path.exists(FFMPEG_PATH):
-    raise FileNotFoundError("FFmpeg not found at the specified path")
+# Path to FFmpeg (search system-wide)
+FFMPEG_PATH = shutil.which("ffmpeg")
+if FFMPEG_PATH is None:
+    raise FileNotFoundError("FFmpeg is not installed or not found in system PATH")
 
 # Load YOLOv8 model
 model = YOLO("best.pt")  # Your trained YOLO model
@@ -43,7 +44,7 @@ def process_image(image_path):
     img = cv2.imread(image_path)
     results = model(image_path)
     detected_texts = set()
-    
+
     for box in results[0].boxes.xyxy:
         x1, y1, x2, y2 = map(int, box.tolist())
         plate_img = img[y1:y2, x1:x2]
@@ -56,7 +57,7 @@ def process_image(image_path):
                 if res:
                     for line in res:
                         detected_texts.add(line[1][0])
-    
+
     processed_image_path = os.path.join(PROCESSED_FOLDER, f"processed_{uuid.uuid4().hex}.jpg")
     cv2.imwrite(processed_image_path, img)
     return processed_image_path, list(detected_texts)
@@ -74,7 +75,7 @@ def process_video(video_path):
         ret, frame = cap.read()
         if not ret:
             break
-        
+
         frame_count += 1
         if frame_count % 10 == 0:
             results = model(frame)
@@ -92,14 +93,14 @@ def process_video(video_path):
                                 detected_texts.add(line[1][0])
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
         out.write(frame)
-    
+
     cap.release()
     out.release()
-    
+
     processed_video_path = os.path.join(PROCESSED_FOLDER, f"processed_{uuid.uuid4().hex}.mp4")
     convert_video_for_web(temp_video_path, processed_video_path)
     os.remove(temp_video_path)  # Remove temp video
-    
+
     return processed_video_path, list(detected_texts)
 
 @app.route("/", methods=["GET", "POST"])
