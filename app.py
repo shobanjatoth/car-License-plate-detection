@@ -122,7 +122,5 @@ def upload_file():
             return render_template("result.html", uploaded_file=filename, processed_file=os.path.basename(processed_file), ocr_results=ocr_results)
     return render_template("index.html")
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000)) 
-    app.run(host="0.0.0.0", port=port)
+
     
